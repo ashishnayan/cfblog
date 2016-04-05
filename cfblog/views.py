@@ -1,6 +1,7 @@
 __author__ = 'vinay'
 import json
 import traceback
+from django.utils.dateparse import parse_datetime
 
 from django.core.cache import cache
 from django.http.response import HttpResponseForbidden, JsonResponse
@@ -25,10 +26,15 @@ def save(request, save_type):
         return HttpResponseForbidden()
 
     post_data = request.POST
+
     if any(_ not in post_data for _ in ('auth_data', 'cms_page_id')) or save_type not in ('draft', 'publish'):
         return JsonResponse({'success': False}, status=400)
 
     cms_page = get_object_or_404(Content, id=post_data['cms_page_id'])
+    draft_date = parse_datetime(post_data['draft_modified'])
+
+    if draft_date < cms_page.modified_on:
+        return JsonResponse({'success': False,'draft_error':True, 'message': 'Draft data was out of date'}, status=200)
 
     try:
         content = json.loads(post_data['auth_data'])
