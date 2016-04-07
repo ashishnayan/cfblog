@@ -8,10 +8,15 @@ from django.http.response import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
+from django.dispatch import Signal
 
 from .models import Content
 from .response import render, render_content
 from .utils import user_passes_test
+
+
+pre_publish_signal = Signal(providing_args=["content"])
+post_publish_signal = Signal()
 
 
 def cms_page_index(request):
@@ -56,5 +61,12 @@ def save(request, save_type):
             if save_type == 'draft':
                 cms_page.save()
             else:
+                pre_signal_response = pre_publish_signal.send(sender=self.__class__, content=content)
+                for v1,v2 in pre_signal_response:
+                    if not v1:
+                        return JsonResponse({'success': False, 'message': v2}, status=200)
+
                 cms_page.publish_cms_content()
+                post_publish_signal.send(sender=self.__class__)
+
             return JsonResponse({'success': True})
