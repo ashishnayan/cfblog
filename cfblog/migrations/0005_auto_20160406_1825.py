@@ -32,9 +32,10 @@ def add_publish_permission(apps, schema_editor):
     Permission = apps.get_model('auth', 'Permission')
     permission = Permission.objects.get(codename='can_publish') 
 
-    for user in users:
+    for user in users.iterator():
         user.user_permissions.add(permission)
-    for group in groups:
+        
+    for group in groups.iterator():
         group.permissions.add(permission)
 
 class Migration(migrations.Migration):
