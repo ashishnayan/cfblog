@@ -88,6 +88,7 @@ def save(request, save_type):
                         return JsonResponse(
                             {
                                 'success': False,
+                                'meta_tag_error': True,
                                 'message': v2
                             },
                             status=200
