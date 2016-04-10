@@ -7,4 +7,4 @@ from django.dispatch import Signal
     e.g. [(True, "Tag name: Success",), (False, "Tag Name: Error Message",)...]
 """
 pre_publish_signal = Signal(providing_args=["cms_page"])
-post_publish_signal = Signal()
+post_publish_signal = Signal(providing_args=["cms_page"])

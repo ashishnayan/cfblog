@@ -25,7 +25,6 @@ def cms_page_index(request):
 @user_passes_test()
 def save(request, save_type):
     if not request.is_ajax():
-        print 'NOT AJAX'
         return HttpResponseForbidden()
 
     post_data = request.POST
@@ -95,6 +94,9 @@ def save(request, save_type):
                         )
 
                 cms_page.publish_cms_content()
-                post_publish_signal.send(sender=cms_page._meta.model)
+                post_publish_signal.send(
+                    sender=cms_page._meta.model,
+                    cms_page=cms_page
+                )
 
             return JsonResponse({'success': True})
