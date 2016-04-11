@@ -82,21 +82,34 @@ def save(request, save_type):
                     sender=cms_page._meta.model,
                     cms_page=cms_page
                 )
-                for v1, v2 in pre_signal_response:
-                    if not v1:
-                        return JsonResponse(
-                            {
-                                'success': False,
-                                'meta_tag_error': True,
-                                'message': v2
-                            },
-                            status=200
-                        )
+                errors, warns = [], []
+                for _, response in pre_signal_response:
+                    for should_publish, msg in response:
+                        if should_publish is False:
+                            errors.append(msg)
+                        elif should_publish is None:
+                            warns.append(msg)
 
-                cms_page.publish_cms_content()
-                post_publish_signal.send(
-                    sender=cms_page._meta.model,
-                    cms_page=cms_page
-                )
+                if errors:
+                    return JsonResponse(
+                        {
+                            'success': False,
+                            'message': ', '.join(errors)
+                        }
+                    )
+                else:
+                    cms_page.publish_cms_content()
+                    post_publish_signal.send(
+                        sender=cms_page._meta.model,
+                        cms_page=cms_page
+                    )
+
+                if warns:
+                    return JsonResponse(
+                        {
+                            'success': None,
+                            'message': ', '.join(warns)
+                        }
+                    )
 
             return JsonResponse({'success': True})

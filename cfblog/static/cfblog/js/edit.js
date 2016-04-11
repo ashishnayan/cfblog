@@ -313,7 +313,7 @@ $(document).ready(function () {
             } else {
                 console.log('Exception is: ' + data.exception);
                 alert(data.message);
-                if(data.draft_error){
+                if(data.draft_error || data.success == null){
                     location.reload(true);
                     local_storage.removeItem(local_storage_name);
                 }
