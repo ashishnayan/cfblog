@@ -38,7 +38,7 @@ def save(request, save_type):
     cms_page = get_object_or_404(Content, id=post_data['cms_page_id'])
     draft_date = parse_datetime(post_data['draft_modified'])
 
-    if draft_date < cms_page.modified_on:
+    if draft_date and draft_date < cms_page.modified_on:
         return JsonResponse(
             {
                 'success': False,
@@ -84,17 +84,21 @@ def save(request, save_type):
                 )
                 errors, warns = [], []
                 for _, response in pre_signal_response:
-                    for should_publish, msg in response:
-                        if should_publish is False:
-                            errors.append(msg)
-                        elif should_publish is None:
-                            warns.append(msg)
+                    should_publish, msg = response
+                    if should_publish is False:
+                        errors.append(msg)
+                    elif should_publish is None:
+                        warns.append(msg)
 
                 if errors:
                     return JsonResponse(
                         {
                             'success': False,
-                            'message': ', '.join(errors)
+                            'message_in_detail': '\n'.join(errors),
+                            'message': """
+                                Empty Tags.
+                                Please check console for details
+                            """
                         }
                     )
                 else:
@@ -108,7 +112,11 @@ def save(request, save_type):
                     return JsonResponse(
                         {
                             'success': None,
-                            'message': ', '.join(warns)
+                            'message_in_details': '\n'.join(warns),
+                            'message': """
+                                Tags Not Available.
+                                Please check console for details
+                            """
                         }
                     )
 

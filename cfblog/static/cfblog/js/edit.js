@@ -311,7 +311,7 @@ $(document).ready(function () {
                 local_storage.removeItem(local_storage_name);
                 location.reload(true);
             } else {
-                console.log('Exception is: ' + data.exception);
+                console.log(data.message_in_detail);
                 alert(data.message);
                 if(data.draft_error || data.success == null){
                     location.reload(true);
